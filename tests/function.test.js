@@ -30,4 +30,9 @@ describe('ip2region', () => {
     const d = await searcher1.search('218.4.167.70')
     expect(d.region).equal('中国|0|江苏省|苏州市|电信')
   })
+
+  it('#newWithBuffer and searchWithBuffer', async () => {
+    const d = searcher1.searchWithBuffer('218.4.167.70')
+    expect(d.region).equal('中国|0|江苏省|苏州市|电信')
+  })
 })

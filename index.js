@@ -130,6 +130,64 @@ class Searcher {
     const took = (diff[0] * 1e9 + diff[1]) / 1e3
     return { region: result, ioCount: ioStatus.ioCount, took }
   }
+
+  searchWithBuffer(ip) {
+    const startTime = process.hrtime()
+
+    if (!isValidIp(ip)) {
+      throw new Error(`IP: ${ip} is invalid`)
+    }
+    if (!this._buffer) {
+      throw new Error(`this._buffer is null`)
+    }
+    if (!this._vectorIndex) {
+      throw new Error(`this._vectorIndex is null`)
+    }
+
+    const ps = ip.split('.')
+    const i0 = parseInt(ps[0])
+    const i1 = parseInt(ps[1])
+    const i2 = parseInt(ps[2])
+    const i3 = parseInt(ps[3])
+
+    const ipInt = i0 * 256 * 256 * 256 + i1 * 256 * 256 + i2 * 256 + i3
+    const idx = i0 * VectorIndexCols * VectorIndexSize + i1 * VectorIndexSize
+    const sPtr = this._vectorIndex.readUInt32LE(idx)
+    const ePtr = this._vectorIndex.readUInt32LE(idx + 4)
+    let l = 0
+    let h = (ePtr - sPtr) / SegmentIndexSize
+    let result = null
+
+    while (l <= h) {
+      const m = (l + h) >> 1
+
+      const p = sPtr + m * SegmentIndexSize
+
+      const buff = this._buffer.subarray(p, p + SegmentIndexSize)
+
+      const sip = buff.readUInt32LE(0)
+
+      if (ipInt < sip) {
+        h = m - 1
+      } else {
+        const eip = buff.readUInt32LE(4)
+        if (ipInt > eip) {
+          l = m + 1
+        } else {
+          const dataLen = buff.readUInt16LE(8)
+          const dataPtr = buff.readUInt32LE(10)
+          const data = this._buffer.subarray(dataPtr, dataPtr + dataLen)
+          result = data.toString('utf-8')
+          break
+        }
+      }
+    }
+
+    const diff = process.hrtime(startTime)
+
+    const took = (diff[0] * 1e9 + diff[1]) / 1e3
+    return { region: result, took }
+  }
 }
 
 const _checkFile = dbPath => {

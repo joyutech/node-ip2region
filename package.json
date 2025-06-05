@@ -1,6 +1,6 @@
 {
   "name": "@joyu/ip2region",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Unofficial nodejs client of ip2region (originally from official and maintained by Joyu)",
   "main": "index.js",
   "scripts": {

@@ -56,9 +56,12 @@ try {
   const buffer = Searcher.loadContentFromFile(dbPath)
   // 创建searcher对象
   const searcher = Searcher.newWithBuffer(buffer)
-  // 查询 await 或 promise均可
-  const data = await searcher.search('218.4.167.70')
-  // data: {region:'中国|0|江苏省|苏州市|电信', ioCount: 0, took: 0.063833}
+  // 同步查询
+  let data = searcher.searchWithBuffer('218.4.167.70')
+  // data: {region:'中国|0|江苏省|苏州市|电信', took: 0.063833}
+  // 异步查询，await 或 promise 均可
+  data = await searcher.search('218.4.167.70')
+  // data: {region:'中国|0|江苏省|苏州市|电信', took: 0.063833}
 } catch(e) {
   console.log(e)
 }
